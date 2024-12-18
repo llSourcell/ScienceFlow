@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Mathematical Discovery Pipeline</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet">
+<style>
+  /* Custom styles for markdown content */
+  .markdown-content h1 { @apply text-3xl font-bold mt-8 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent; }
+  .markdown-content h2 { @apply text-2xl font-bold mt-6 mb-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent; }
+  .markdown-content h3 { @apply text-xl font-bold mt-5 mb-2 text-indigo-600; }
+  .markdown-content p { @apply my-4 text-gray-700 leading-relaxed; }
+  .markdown-content ul { @apply list-disc ml-6 my-4 text-gray-700; }
+  .markdown-content ol { @apply list-decimal ml-6 my-4 text-gray-700; }
+  
+  /* Improved code styling */
+  .markdown-content code:not([class*="language-"]) { 
+    @apply px-2 py-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-md text-sm font-mono text-pink-600 border border-gray-200;
+  }
+  .markdown-content pre[class*="language-"] {
+    @apply my-6 rounded-xl shadow-xl;
+    background: linear-gradient(to bottom right, #1a1a1a, #2d2d2d) !important;
+  }
+  
+  /* Section styling */
+  .result-section {
+    @apply p-6 rounded-xl shadow-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 transition-all duration-300;
+  }
+  .result-section:hover {
+    @apply shadow-xl transform -translate-y-1;
+  }
+  
+  /* Pipeline stages */
+  .pipeline-stage {
+    @apply flex flex-col items-center space-y-2 transition-all duration-300;
+  }
+  .pipeline-stage .icon-container {
+    @apply p-4 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg transform transition-all duration-300;
+  }
+  .pipeline-stage:hover .icon-container {
+    @apply scale-110 shadow-xl;
+  }
+  
+  /* Code syntax highlighting */
+  .token.keyword { 
+    @apply text-pink-400 font-semibold;
+    text-shadow: 0 0 8px rgba(236, 72, 153, 0.3);
+  }
+  .token.function { 
+    @apply text-blue-400 font-semibold;
+    text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+  }
+  .token.string { 
+    @apply text-green-400;
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+  }
+  .token.number { 
+    @apply text-orange-400;
+    text-shadow: 0 0 8px rgba(251, 146, 60, 0.3);
+  }
+  .token.comment { 
+    @apply text-gray-400 italic;
+  }
+  .token.operator { 
+    @apply text-yellow-400 font-bold;
+    text-shadow: 0 0 8px rgba(250, 204, 21, 0.3);
+  }
+  
+  /* Verification report styling */
+  .verification-box {
+    @apply p-4 rounded-lg border-l-4 my-3;
+  }
+  .verification-success {
+    @apply border-green-500 bg-gradient-to-r from-green-50 to-green-100;
+  }
+  .verification-warning {
+    @apply border-yellow-500 bg-gradient-to-r from-yellow-50 to-yellow-100;
+  }
+  .verification-error {
+    @apply border-red-500 bg-gradient-to-r from-red-50 to-red-100;
+  }
+  
+  /* Sequence visualization */
+  .sequence-box {
+    @apply p-4 rounded-lg bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 my-3;
+  }
+  .sequence-step {
+    @apply inline-block px-3 py-1 rounded-full bg-white shadow-sm mx-1 text-sm font-mono text-indigo-600;
+  }
+  
+  /* Animation for loading states */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+  .loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Mathematical Loading Animation */
+  .loading-container {
+    @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black/30 backdrop-blur-sm z-50;
+  }
+  
+  .math-loader {
+    @apply relative w-24 h-24;
+  }
+
+  @keyframes drawSpiral {
+    0% { stroke-dashoffset: 1000; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes rotateFractal {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(0.8); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+
+  .fractal-spiral {
+    @apply w-full h-full;
+    animation: rotateFractal 3s ease-in-out infinite;
+  }
+
+  .spiral-path {
+    fill: none;
+    stroke: url(#spiralGradient);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawSpiral 3s ease-in-out infinite;
+  }
+
+  .math-formula {
+    @apply absolute text-lg font-serif text-white transform transition-all duration-500;
+  }
+
+  @keyframes fadeInOut {
+    0%, 100% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .formula-1 { top: -30px; animation: fadeInOut 2s ease-in-out infinite; }
+  .formula-2 { right: -30px; animation: fadeInOut 2s ease-in-out infinite 0.5s; }
+  .formula-3 { bottom: -30px; animation: fadeInOut 2s ease-in-out infinite 1s; }
+  .formula-4 { left: -30px; animation: fadeInOut 2s ease-in-out infinite 1.5s; }
+
+  /* Download button styling */
+  .download-button {
+    @apply mt-8 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg 
+           font-semibold flex items-center gap-2 hover:from-indigo-700 hover:to-purple-700 
+           transform transition-all duration-200 hover:scale-105 hover:shadow-lg;
+  }
+
+  .download-icon {
+    @apply w-5 h-5;
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<div class="w-full max-w-4xl mx-auto p-6 space-y-8">
+  <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-gray-200">
+    <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+      Mathematical Discovery Pipeline
+    </h2>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          What mathematical patttern would you like to explore?
+        </label>
+        <div class="flex gap-2">
+          <input
+            id="userInput"
+            type="text"
+            class="flex-1 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., what happens if we modify the Collatz sequence?"
+          />
+          <button
+            id="startBtn"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Start Discovery
+          </button>
+        </div>
+      </div>
+
+      <div id="pipelineContainer" class="hidden space-y-6">
+        <!-- Stages -->
+        <div class="grid grid-cols-6 gap-4">
+          <!-- Each stage has a data-stage attribute -->
+          <div class="flex flex-col items-center space-y-2" data-stage="input">
+            <div class="p-3 rounded-full bg-blue-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-blue-600">Initial Curiosity</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Your mathematical question</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-2 opacity-50" data-stage="analysis">
+            <div class="p-3 rounded-full bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-gray-400">Pattern Analysis</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Finding mathematical structures</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-2 opacity-50" data-stage="exploration">
+            <div class="p-3 rounded-full bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-gray-400">Automated Discovery</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Generating and testing hypotheses</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-2 opacity-50" data-stage="validation">
+            <div class="p-3 rounded-full bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-gray-400">Proof Validation</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Verifying the discovery</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-2 opacity-50" data-stage="paper">
+            <div class="p-3 rounded-full bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-gray-400">Paper Generation</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Writing formal paper</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-2 opacity-50" data-stage="publication">
+            <div class="p-3 rounded-full bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </div>
+            <div class="text-center">
+              <div class="text-sm font-medium text-gray-400">Publication</div>
+              <div class="text-xs text-gray-500 max-w-[120px] text-center">Submitting to arXiv</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="resultsContainer" class="space-y-8 hidden">
+          <div id="pipelineResultSection" class="result-section hidden">
+            <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+              Pipeline Result (Hypothesis & Steps)
+            </h3>
+            <div id="pipelineResult" class="markdown-content"></div>
+          </div>
+          
+          <div id="verificationSection" class="result-section hidden">
+            <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+              Verification Report
+            </h3>
+            <div id="verificationReport" class="markdown-content"></div>
+          </div>
+
+          <div id="peerReviewSection" class="result-section hidden">
+            <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+              Peer Review Report
+            </h3>
+            <div id="peerReviewReport" class="markdown-content"></div>
+          </div>
+
+          <div id="paperSection" class="hidden space-y-4">
+            <h3 class="text-lg font-semibold text-gray-900">Paper Title</h3>
+            <div id="paperTitle" class="p-4 bg-white rounded shadow text-gray-700"></div>
+          </div>
+
+          <div id="publicationSection" class="hidden">
+            <div class="border border-green-200 bg-green-50 p-4 rounded flex items-start gap-2">
+              <svg class="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2l4 -4M12 21a9 9 0 100-18 9 9 0 000 18z"></path></svg>
+              <div class="text-green-800">
+                Paper successfully generated and ready for arXiv submission.
+              </div>
+            </div>
+          </div>
+
+          <div id="downloadSection" class="hidden text-center">
+            <button onclick="downloadPaper()" class="download-button">
+              <svg class="download-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
+              </svg>
+              Download Paper as PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Add the loading overlay -->
+<div id="loadingOverlay" class="loading-container hidden">
+  <div class="math-loader">
+    <svg class="fractal-spiral" viewBox="0 0 100 100">
+      <!-- Gradient definition -->
+      <defs>
+        <linearGradient id="spiralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color: #4F46E5" />
+          <stop offset="50%" style="stop-color: #7C3AED" />
+          <stop offset="100%" style="stop-color: #EC4899" />
+        </linearGradient>
+      </defs>
+      
+      <!-- Golden spiral path -->
+      <path class="spiral-path" d="
+        M 50 50
+        m -4 0
+        a 4 4 0 1 1 8 0
+        a 6 6 0 1 1 -12 0
+        a 8 8 0 1 1 16 0
+        a 10 10 0 1 1 -20 0
+        a 12 12 0 1 1 24 0
+        a 14 14 0 1 1 -28 0
+        a 16 16 0 1 1 32 0
+        a 18 18 0 1 1 -36 0
+        a 20 20 0 1 1 40 0
+      "/>
+    </svg>
+    <!-- Mathematical formulas -->
+    <div class="math-formula formula-1">eiπ + 1 = 0</div>
+    <div class="math-formula formula-2">∫ex dx</div>
+    <div class="math-formula formula-3">∑n→∞</div>
+    <div class="math-formula formula-4">φ = 1.618</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-lean.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+  const startBtn = document.getElementById('startBtn');
+  const userInput = document.getElementById('userInput');
+  const pipelineContainer = document.getElementById('pipelineContainer');
+  const resultsContainer = document.getElementById('resultsContainer');
+
+  const pipelineStages = ['analysis', 'exploration', 'validation', 'paper', 'publication'];
+
+  let pipelineResultData = null;
+
+  startBtn.addEventListener('click', async () => {
+    const prompt = userInput.value.trim();
+    if (!prompt) return;
+    
+    pipelineContainer.classList.remove('hidden');
+    
+    // Show loading overlay
+    document.getElementById('loadingOverlay').classList.remove('hidden');
+    
+    // Reset all stages and immediately highlight Pattern Analysis
+    resetAllStages();
+    highlightStage('analysis');
+
+    try {
+      const res = await fetch('/run_pipeline', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({prompt})
+      });
+      
+      if (!res.ok) {
+        showError("Error running pipeline.");
+        return;
+      }
+      
+      pipelineResultData = await res.json();
+
+      // Hide loading overlay
+      document.getElementById('loadingOverlay').classList.add('hidden');
+
+      // After getting results, animate through remaining stages
+      let delay = 1000;
+      for (let i = 1; i < pipelineStages.length; i++) {
+        const stage = pipelineStages[i];
+        setTimeout(() => {
+          highlightStage(stage);
+          if (stage === 'exploration') {
+            showPipelineResults();
+          }
+          if (stage === 'validation') {
+            showVerification();
+          }
+          if (stage === 'paper') {
+            showPeerReview();
+            showPaperTitle();
+          }
+          if (stage === 'publication') {
+            showPublication();
+          }
+        }, delay);
+        delay += 1000;
+      }
+    } catch (error) {
+      // Hide loading overlay on error
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      showError("Error: " + error.message);
+    }
+  });
+
+  function resetAllStages() {
+    // Reset input stage and all pipeline stages
+    document.querySelectorAll('[data-stage]').forEach(el => {
+      el.classList.add('opacity-50');
+      const svg = el.querySelector('svg');
+      if (svg) {
+        svg.classList.remove('text-blue-600');
+        svg.classList.add('text-gray-400');
+      }
+      const bg = el.querySelector('.p-3');
+      if (bg) {
+        bg.classList.remove('bg-blue-100');
+        bg.classList.add('bg-gray-100');
+      }
+      const text = el.querySelector('.text-sm');
+      if (text) {
+        text.classList.remove('text-blue-600');
+        text.classList.add('text-gray-400');
+      }
+    });
+  }
+
+  function highlightStage(stage) {
+    const stageEl = document.querySelector(`[data-stage="${stage}"]`);
+    if (!stageEl) return;
+    
+    // Add smooth transition
+    stageEl.classList.remove('opacity-50');
+    stageEl.classList.add('transition-all', 'duration-500', 'ease-in-out');
+    
+    const svg = stageEl.querySelector('svg');
+    if (svg) {
+      svg.classList.remove('text-gray-400');
+      svg.classList.add('text-blue-600', 'transition-colors', 'duration-500');
+    }
+    
+    const bg = stageEl.querySelector('.p-3');
+    if (bg) {
+      bg.classList.remove('bg-gray-100');
+      bg.classList.add('bg-blue-100', 'transition-colors', 'duration-500');
+    }
+    
+    const text = stageEl.querySelector('.text-sm');
+    if (text) {
+      text.classList.remove('text-gray-400');
+      text.classList.add('text-blue-600', 'transition-colors', 'duration-500');
+    }
+  }
+
+  function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'p-4 mb-4 text-red-700 bg-red-100 rounded-lg';
+    errorDiv.textContent = message;
+    resultsContainer.prepend(errorDiv);
+    setTimeout(() => errorDiv.remove(), 5000);
+  }
+
+  function formatSequence(sequence) {
+    return sequence.split(',').map(num => 
+      `<span class="sequence-step">${num.trim()}</span>`
+    ).join(' → ');
+  }
+
+  function showPipelineResults() {
+    resultsContainer.classList.remove('hidden');
+    document.getElementById('pipelineResultSection').classList.remove('hidden');
+    const resultElement = document.getElementById('pipelineResult');
+    
+    // Convert markdown to HTML and highlight code blocks
+    let html = marked.parse(pipelineResultData.pipeline_result);
+    
+    // Add custom styling for sequences
+    html = html.replace(/\[([0-9, ]+)\]/g, (match, sequence) => 
+      `<div class="sequence-box">${formatSequence(sequence)}</div>`
+    );
+    
+    resultElement.innerHTML = html;
+    Prism.highlightAllUnder(resultElement);
+  }
+
+  function showVerification() {
+    document.getElementById('verificationSection').classList.remove('hidden');
+    const reportElement = document.getElementById('verificationReport');
+    
+    let html = marked.parse(pipelineResultData.verification_report);
+    
+    // Add custom styling for verification messages
+    if (html.includes('successfully')) {
+      html = `<div class="verification-box verification-success">${html}</div>`;
+    } else if (html.includes('unproven') || html.includes('incomplete')) {
+      html = `<div class="verification-box verification-warning">${html}</div>`;
+    } else if (html.includes('Failed') || html.includes('Error')) {
+      html = `<div class="verification-box verification-error">${html}</div>`;
+    }
+    
+    reportElement.innerHTML = html;
+    Prism.highlightAllUnder(reportElement);
+  }
+
+  function showPeerReview() {
+    document.getElementById('peerReviewSection').classList.remove('hidden');
+    const reviewElement = document.getElementById('peerReviewReport');
+    
+    // Convert markdown to HTML and highlight code blocks
+    const html = marked.parse(pipelineResultData.peer_review_report);
+    reviewElement.innerHTML = html;
+    
+    // Highlight all code blocks
+    Prism.highlightAllUnder(reviewElement);
+  }
+
+  function showPaperTitle() {
+    document.getElementById('paperSection').classList.remove('hidden');
+    const titleElement = document.getElementById('paperTitle');
+    
+    // Use the GPT-generated title from the API response
+    titleElement.innerHTML = `<h4 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">${pipelineResultData.paper_title}</h4>`;
+  }
+
+  function showPublication() {
+    document.getElementById('publicationSection').classList.remove('hidden');
+    document.getElementById('downloadSection').classList.remove('hidden');  // Show download button
+  }
+
+  async function downloadPaper() {
+    try {
+      const response = await fetch('/generate_pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: pipelineResultData.paper_title,
+          content: pipelineResultData.pipeline_result,
+          verification: pipelineResultData.verification_report,
+          review: pipelineResultData.peer_review_report
+        })
+      });
+
+      if (!response.ok) throw new Error('PDF generation failed');
+
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${pipelineResultData.paper_title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      showError("Error generating PDF: " + error.message);
+    }
+  }
+</script>
+
+</body>
+</html>

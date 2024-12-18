@@ -1,0 +1,6 @@
+Flask
+flask-bcrypt
+flask-login
+google-cloud-firestore
+openai
+sympy
