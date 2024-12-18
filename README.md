@@ -20,6 +20,8 @@ An AI-powered platform that automates the process of mathematical discovery, ver
 
 ## 🚀 Getting Started
 
+Web link - https://blooming-island-05267-ef86d983a41c.herokuapp.com/discovery
+
 ### Prerequisites 
 
 
@@ -80,17 +82,13 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work* - [YourGithub](https://github.com/yourusername)
-
 ## 🙏 Acknowledgments
 
 - Mathematical community for inspiration
 - Open source contributors
 - LaTeX community for document generation support
 
-## 📞 Support
 
-For support, email support@mathdiscoverypipeline.com or open an issue in the repository.
 
 ## 🔮 Future Enhancements
 
