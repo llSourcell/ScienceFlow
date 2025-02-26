@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>Mathematical Discovery Pipeline</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet">
@@ -158,11 +159,84 @@
   .download-icon {
     @apply w-5 h-5;
   }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .w-full.max-w-4xl.mx-auto.p-6 {
+      padding: 0.75rem;
+    }
+    
+    .bg-white.rounded-2xl.shadow-xl.p-8 {
+      padding: 1rem;
+    }
+    
+    .result-section {
+      padding: 1rem;
+    }
+    
+    .text-3xl {
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+    
+    .text-xl {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+    
+    .markdown-content h1 { 
+      font-size: 1.5rem;
+      line-height: 2rem;
+    }
+    .markdown-content h2 { 
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+    .markdown-content h3 { 
+      font-size: 1.125rem;
+      line-height: 1.5rem;
+    }
+    
+    .math-formula {
+      font-size: 0.875rem;
+    }
+    
+    .sequence-step {
+      font-size: 0.75rem;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    
+    /* Touch-friendly improvements */
+    input, button {
+      padding: 0.75rem;
+    }
+    
+    .download-button {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    /* Mobile-friendly loading animation */
+    .math-loader {
+      width: 5rem;
+      height: 5rem;
+    }
+    
+    .formula-1, .formula-2, .formula-3, .formula-4 {
+      font-size: 0.875rem;
+    }
+    
+    .formula-1 { top: -25px; }
+    .formula-2 { right: -25px; }
+    .formula-3 { bottom: -25px; }
+    .formula-4 { left: -25px; }
+  }
 </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
 
-<div class="w-full max-w-4xl mx-auto p-6 space-y-8">
+<div class="w-full max-w-4xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-8">
   <div class="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-gray-200">
     <h2 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
       Mathematical Discovery Pipeline
@@ -173,7 +247,7 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           What mathematical patttern would you like to explore?
         </label>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
             id="userInput"
             type="text"
@@ -191,7 +265,7 @@
 
       <div id="pipelineContainer" class="hidden space-y-6">
         <!-- Stages -->
-        <div class="grid grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <!-- Each stage has a data-stage attribute -->
           <div class="flex flex-col items-center space-y-2" data-stage="input">
             <div class="p-3 rounded-full bg-blue-100">
@@ -266,7 +340,7 @@
           </div>
         </div>
 
-        <div id="resultsContainer" class="space-y-8 hidden">
+        <div id="resultsContainer" class="space-y-4 sm:space-y-8 hidden">
           <div id="pipelineResultSection" class="result-section hidden">
             <h3 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
               Pipeline Result (Hypothesis & Steps)
@@ -290,7 +364,7 @@
 
           <div id="paperSection" class="hidden space-y-4">
             <h3 class="text-lg font-semibold text-gray-900">Paper Title</h3>
-            <div id="paperTitle" class="p-4 bg-white rounded shadow text-gray-700"></div>
+            <div id="paperTitle" class="p-3 sm:p-4 bg-white rounded shadow text-gray-700"></div>
           </div>
 
           <div id="publicationSection" class="hidden">
@@ -303,7 +377,7 @@
           </div>
 
           <div id="downloadSection" class="hidden text-center">
-            <button onclick="downloadPaper()" class="download-button">
+            <button onclick="downloadPaper()" class="download-button w-full sm:w-auto">
               <svg class="download-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                       d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
