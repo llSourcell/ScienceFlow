@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Portfolio - Trading Bot</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  /* Custom styles */
+  .card {
+    @apply p-6 rounded-xl shadow-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-xl transform -translate-y-1;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors;
+  }
+  
+  .price-up {
+    @apply text-green-600;
+  }
+  
+  .price-down {
+    @apply text-red-600;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .card {
+      padding: 1rem;
+    }
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <div class="flex-shrink-0 flex items-center">
+          <span class="text-xl font-bold text-blue-600">TradingBot</span>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a href="/" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Dashboard
+          </a>
+          <a href="/market" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Market
+          </a>
+          <a href="/portfolio" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Portfolio
+          </a>
+          <a href="/trade_history" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Trade History
+          </a>
+        </div>
+      </div>
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        <div class="ml-3 relative">
+          <div class="flex items-center space-x-4">
+            <a href="/logout" class="text-sm text-gray-700 hover:text-gray-900">Logout</a>
+          </div>
+        </div>
+      </div>
+      <div class="-mr-2 flex items-center sm:hidden">
+        <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden mobile-menu sm:hidden">
+    <div class="pt-2 pb-3 space-y-1">
+      <a href="/" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Dashboard
+      </a>
+      <a href="/market" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Market
+      </a>
+      <a href="/portfolio" class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Portfolio
+      </a>
+      <a href="/trade_history" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Trade History
+      </a>
+    </div>
+    <div class="pt-4 pb-3 border-t border-gray-200">
+      <div class="mt-3 space-y-1">
+        <a href="/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Portfolio Summary -->
+  <div class="card mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Portfolio Summary</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-500">Total Portfolio Value</div>
+        <div class="text-2xl font-bold">${{ total_value|default('0.00') }}</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-500">Available Balance</div>
+        <div class="text-2xl font-bold">${{ balance|default('0.00') }}</div>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow">
+        <div class="text-sm text-gray-500">Total Assets</div>
+        <div class="text-2xl font-bold">{{ portfolio|length }}</div>
+      </div>
+    </div>
+    
+    <div class="flex justify-end">
+      <a href="/market" class="btn-primary">Trade Now</a>
+    </div>
+  </div>
+  
+  <!-- Portfolio Holdings -->
+  <div class="card">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Your Holdings</h2>
+    
+    {% if portfolio %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Price</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for symbol, data in portfolio.items() %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">{{ symbol }}</div>
+                  <div class="text-sm text-gray-500">{{ get_asset_name(symbol)|default(symbol) }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ data.amount }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ data.price }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ data.value }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <a href="/?symbol={{ symbol }}" class="text-blue-600 hover:text-blue-900 mr-3">Trade</a>
+              <a href="/market?symbol={{ symbol }}" class="text-blue-600 hover:text-blue-900">Analyze</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="bg-gray-50 p-6 rounded-lg text-center">
+      <p class="text-gray-600 mb-4">You don't have any assets in your portfolio yet.</p>
+      <a href="/market" class="btn-primary">Start Trading</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // Mobile menu toggle
+  document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+    document.querySelector('.mobile-menu').classList.toggle('hidden');
+  });
+  
+  // Helper function to get asset name from symbol (can be used in Jinja templates)
+  function get_asset_name(symbol) {
+    const nameMap = {
+      'BTC-USD': 'Bitcoin',
+      'ETH-USD': 'Ethereum',
+      'SOL-USD': 'Solana',
+      'ADA-USD': 'Cardano',
+      'XRP-USD': 'Ripple',
+      'AAPL': 'Apple Inc.',
+      'MSFT': 'Microsoft',
+      'GOOGL': 'Alphabet',
+      'AMZN': 'Amazon',
+      'TSLA': 'Tesla',
+      'NVDA': 'NVIDIA',
+      'META': 'Meta Platforms',
+      'EURUSD=X': 'EUR/USD',
+      'GBPUSD=X': 'GBP/USD',
+      'USDJPY=X': 'USD/JPY',
+      'AUDUSD=X': 'AUD/USD'
+    };
+    
+    return nameMap[symbol] || symbol;
+  }
+</script>
+
+</body>
+</html>

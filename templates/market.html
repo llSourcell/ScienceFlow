@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Market Analysis - Trading Bot</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  /* Custom styles */
+  .card {
+    @apply p-6 rounded-xl shadow-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-xl transform -translate-y-1;
+  }
+  
+  .asset-card {
+    @apply p-4 rounded-lg border border-gray-200 bg-white shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors;
+  }
+  
+  .price-up {
+    @apply text-green-600;
+  }
+  
+  .price-down {
+    @apply text-red-600;
+  }
+  
+  .tab {
+    @apply px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer;
+  }
+  
+  .tab.active {
+    @apply text-blue-600 border-b-2 border-blue-600 font-medium;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .card {
+      padding: 1rem;
+    }
+    
+    .asset-card {
+      padding: 0.75rem;
+    }
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <div class="flex-shrink-0 flex items-center">
+          <span class="text-xl font-bold text-blue-600">TradingBot</span>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a href="/" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Dashboard
+          </a>
+          <a href="/market" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Market
+          </a>
+          <a href="/portfolio" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Portfolio
+          </a>
+          <a href="/trade_history" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Trade History
+          </a>
+        </div>
+      </div>
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        {% if is_authenticated %}
+        <div class="ml-3 relative">
+          <div class="flex items-center space-x-4">
+            <a href="/logout" class="text-sm text-gray-700 hover:text-gray-900">Logout</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="ml-3 relative">
+          <div class="flex items-center space-x-4">
+            <a href="/login" class="text-sm text-gray-700 hover:text-gray-900">Login</a>
+            <a href="/register" class="text-sm text-gray-700 hover:text-gray-900">Register</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="-mr-2 flex items-center sm:hidden">
+        <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden mobile-menu sm:hidden">
+    <div class="pt-2 pb-3 space-y-1">
+      <a href="/" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Dashboard
+      </a>
+      <a href="/market" class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Market
+      </a>
+      <a href="/portfolio" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Portfolio
+      </a>
+      <a href="/trade_history" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Trade History
+      </a>
+    </div>
+    <div class="pt-4 pb-3 border-t border-gray-200">
+      {% if is_authenticated %}
+      <div class="mt-3 space-y-1">
+        <a href="/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Logout
+        </a>
+      </div>
+      {% else %}
+      <div class="mt-3 space-y-1">
+        <a href="/login" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Login
+        </a>
+        <a href="/register" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Register
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="card">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Market Analysis</h2>
+    
+    <!-- Asset Category Tabs -->
+    <div class="border-b border-gray-200 mb-6">
+      <div class="flex -mb-px">
+        <div class="tab active" data-category="crypto">Cryptocurrencies</div>
+        <div class="tab" data-category="stocks">Stocks</div>
+        <div class="tab" data-category="forex">Forex</div>
+      </div>
+    </div>
+    
+    <!-- Asset Grid -->
+    <div id="assetGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- Assets will be populated here -->
+    </div>
+  </div>
+  
+  <!-- Asset Analysis Modal -->
+  <div id="analysisModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-gray-800" id="modalTitle">Asset Analysis</h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Current Price</div>
+            <div class="text-2xl font-bold" id="modalPrice">$0.00</div>
+            <div class="text-sm" id="modalChange">+0.00%</div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Period</div>
+            <div class="text-lg font-medium" id="modalPeriod">1 month</div>
+          </div>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="text-sm text-gray-500">Avg. Volume</div>
+            <div class="text-lg font-medium" id="modalVolume">0</div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="text-lg font-semibold mb-2">Analysis</h4>
+          <div id="modalAnalysis" class="prose max-w-none bg-gray-50 p-4 rounded-lg">
+            Loading analysis...
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="text-lg font-semibold mb-2">Recommendation</h4>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+              <div class="text-lg font-bold" id="modalAction">HOLD</div>
+              <div class="text-sm text-gray-500">Confidence: <span id="modalConfidence">Medium</span></div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div class="text-sm text-gray-500">Target Price</div>
+                <div class="text-lg font-medium" id="modalTarget">$0.00</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Stop Loss</div>
+                <div class="text-lg font-medium" id="modalStopLoss">$0.00</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Sentiment</div>
+                <div class="text-lg font-medium" id="modalSentiment">Neutral</div>
+              </div>
+              <div>
+                <div class="text-sm text-gray-500">Time Frame</div>
+                <div class="text-lg font-medium" id="modalTimeFrame">Short-term</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-4">
+          <button id="closeModalBtn" class="btn-secondary">Close</button>
+          {% if is_authenticated %}
+          <button id="tradeBtn" class="btn-primary">Trade Now</button>
+          {% else %}
+          <a href="/login" class="btn-primary">Login to Trade</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mobile menu toggle
+  document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+    document.querySelector('.mobile-menu').classList.toggle('hidden');
+  });
+  
+  // Asset data
+  const assets = {
+    crypto: [
+      {% for symbol in assets.crypto %}
+      "{{ symbol }}",
+      {% endfor %}
+    ],
+    stocks: [
+      {% for symbol in assets.stocks %}
+      "{{ symbol }}",
+      {% endfor %}
+    ],
+    forex: [
+      {% for symbol in assets.forex %}
+      "{{ symbol }}",
+      {% endfor %}
+    ]
+  };
+  
+  // Current active category
+  let activeCategory = 'crypto';
+  
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Update active tab
+      document.querySelector('.tab.active').classList.remove('active');
+      this.classList.add('active');
+      
+      // Update active category
+      activeCategory = this.dataset.category;
+      
+      // Populate asset grid
+      populateAssetGrid();
+    });
+  });
+  
+  // Populate asset grid
+  function populateAssetGrid() {
+    const grid = document.getElementById('assetGrid');
+    grid.innerHTML = '';
+    
+    assets[activeCategory].forEach(symbol => {
+      const card = document.createElement('div');
+      card.className = 'asset-card';
+      card.dataset.symbol = symbol;
+      
+      const name = getAssetName(symbol);
+      
+      card.innerHTML = `
+        <div class="flex justify-between items-center mb-2">
+          <div class="font-medium">${name}</div>
+          <div class="text-sm text-gray-500">${symbol}</div>
+        </div>
+        <div class="text-xl font-bold price-placeholder">$0.00</div>
+        <div class="text-sm change-placeholder">+0.00%</div>
+      `;
+      
+      card.addEventListener('click', () => showAnalysis(symbol));
+      
+      grid.appendChild(card);
+      
+      // Fetch price
+      fetchPrice(symbol, card);
+    });
+  }
+  
+  // Get asset name from symbol
+  function getAssetName(symbol) {
+    const nameMap = {
+      'BTC-USD': 'Bitcoin',
+      'ETH-USD': 'Ethereum',
+      'SOL-USD': 'Solana',
+      'ADA-USD': 'Cardano',
+      'XRP-USD': 'Ripple',
+      'AAPL': 'Apple Inc.',
+      'MSFT': 'Microsoft',
+      'GOOGL': 'Alphabet',
+      'AMZN': 'Amazon',
+      'TSLA': 'Tesla',
+      'NVDA': 'NVIDIA',
+      'META': 'Meta Platforms',
+      'EURUSD=X': 'EUR/USD',
+      'GBPUSD=X': 'GBP/USD',
+      'USDJPY=X': 'USD/JPY',
+      'AUDUSD=X': 'AUD/USD'
+    };
+    
+    return nameMap[symbol] || symbol;
+  }
+  
+  // Fetch price for an asset
+  async function fetchPrice(symbol, card) {
+    try {
+      const response = await fetch(`/get_price?symbol=${symbol}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        const priceElement = card.querySelector('.price-placeholder');
+        priceElement.textContent = `$${data.price.toFixed(2)}`;
+        priceElement.classList.remove('price-placeholder');
+        
+        // Simulate random change for demo
+        const change = (Math.random() * 10 - 5).toFixed(2);
+        const changeElement = card.querySelector('.change-placeholder');
+        changeElement.textContent = `${change > 0 ? '+' : ''}${change}%`;
+        changeElement.classList.remove('change-placeholder');
+        
+        if (change > 0) {
+          changeElement.classList.add('price-up');
+        } else {
+          changeElement.classList.add('price-down');
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching price for ${symbol}:`, error);
+    }
+  }
+  
+  // Show analysis modal
+  async function showAnalysis(symbol) {
+    // Show modal
+    document.getElementById('analysisModal').classList.remove('hidden');
+    
+    // Set title
+    document.getElementById('modalTitle').textContent = `${getAssetName(symbol)} (${symbol})`;
+    
+    // Reset modal content
+    document.getElementById('modalPrice').textContent = 'Loading...';
+    document.getElementById('modalChange').textContent = '';
+    document.getElementById('modalPeriod').textContent = 'Loading...';
+    document.getElementById('modalVolume').textContent = 'Loading...';
+    document.getElementById('modalAnalysis').textContent = 'Loading analysis...';
+    document.getElementById('modalAction').textContent = 'Loading...';
+    document.getElementById('modalConfidence').textContent = '';
+    document.getElementById('modalTarget').textContent = 'Loading...';
+    document.getElementById('modalStopLoss').textContent = 'Loading...';
+    document.getElementById('modalSentiment').textContent = 'Loading...';
+    document.getElementById('modalTimeFrame').textContent = 'Loading...';
+    
+    // Set up trade button
+    const tradeBtn = document.getElementById('tradeBtn');
+    if (tradeBtn) {
+      tradeBtn.onclick = () => {
+        window.location.href = `/?symbol=${symbol}`;
+      };
+    }
+    
+    try {
+      // Fetch analysis
+      const response = await fetch('/analyze_market', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          symbol,
+          prompt: ''
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update modal content
+        document.getElementById('modalPrice').textContent = `$${data.market_data.current_price}`;
+        document.getElementById('modalChange').textContent = `${data.market_data.percent_change > 0 ? '+' : ''}${data.market_data.percent_change}%`;
+        document.getElementById('modalChange').className = data.market_data.percent_change > 0 ? 'text-sm price-up' : 'text-sm price-down';
+        document.getElementById('modalPeriod').textContent = data.market_data.period;
+        document.getElementById('modalVolume').textContent = data.market_data.avg_volume.toLocaleString();
+        
+        // Format analysis with markdown
+        document.getElementById('modalAnalysis').innerHTML = formatAnalysis(data.analysis);
+        
+        // Update recommendation
+        document.getElementById('modalAction').textContent = data.recommendation.action;
+        document.getElementById('modalConfidence').textContent = data.recommendation.confidence;
+        document.getElementById('modalTarget').textContent = `$${data.recommendation.target_price}`;
+        document.getElementById('modalStopLoss').textContent = `$${data.recommendation.stop_loss}`;
+        document.getElementById('modalSentiment').textContent = data.recommendation.sentiment;
+        document.getElementById('modalTimeFrame').textContent = data.recommendation.time_frame;
+        
+        // Color code action
+        const actionElement = document.getElementById('modalAction');
+        if (data.recommendation.action.includes('BUY')) {
+          actionElement.className = 'text-lg font-bold text-green-600';
+        } else if (data.recommendation.action.includes('SELL')) {
+          actionElement.className = 'text-lg font-bold text-red-600';
+        } else {
+          actionElement.className = 'text-lg font-bold text-yellow-600';
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching analysis for ${symbol}:`, error);
+      document.getElementById('modalAnalysis').textContent = 'Error loading analysis. Please try again.';
+    }
+  }
+  
+  // Format analysis text
+  function formatAnalysis(text) {
+    // Simple formatting for headings and paragraphs
+    return text
+      .replace(/^# (.*$)/gm, '<h1 class="text-xl font-bold my-2">$1</h1>')
+      .replace(/^## (.*$)/gm, '<h2 class="text-lg font-semibold my-2">$1</h2>')
+      .replace(/^### (.*$)/gm, '<h3 class="text-md font-semibold my-2">$1</h3>')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  }
+  
+  // Close modal
+  document.getElementById('closeModal').addEventListener('click', () => {
+    document.getElementById('analysisModal').classList.add('hidden');
+  });
+  
+  document.getElementById('closeModalBtn').addEventListener('click', () => {
+    document.getElementById('analysisModal').classList.add('hidden');
+  });
+  
+  // Initialize
+  populateAssetGrid();
+</script>
+
+</body>
+</html>
