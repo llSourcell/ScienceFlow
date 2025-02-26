@@ -4,3 +4,6 @@ flask-login
 google-cloud-firestore
 openai
 sympy
+yfinance
+pandas
+numpy

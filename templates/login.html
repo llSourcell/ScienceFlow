@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Login - Trading Bot</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors;
+  }
+  
+  .form-input {
+    @apply w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-md">
+  <div class="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+    <div class="text-center mb-8">
+      <h2 class="text-3xl font-bold text-blue-600">TradingBot</h2>
+      <p class="text-gray-600 mt-2">Login to your account</p>
+    </div>
+    
+    <form id="loginForm" method="post" action="/login" class="space-y-6">
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input type="email" id="email" name="email" required class="form-input" placeholder="your@email.com">
+      </div>
+      
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <input type="password" id="password" name="password" required class="form-input" placeholder="••••••••">
+      </div>
+      
+      <div id="errorMessage" class="text-red-600 text-sm hidden"></div>
+      
+      <div>
+        <button type="submit" class="btn-primary w-full">Login</button>
+      </div>
+    </form>
+    
+    <div class="mt-6 text-center">
+      <p class="text-gray-600">Don't have an account? <a href="/register" class="text-blue-600 hover:text-blue-800">Register</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const errorMessage = document.getElementById('errorMessage');
+    
+    // Hide any previous error
+    errorMessage.classList.add('hidden');
+    
+    try {
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('password', password);
+      
+      const response = await fetch('/login', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (response.ok) {
+        // Redirect to dashboard on success
+        window.location.href = '/dashboard';
+      } else {
+        // Show error message
+        const text = await response.text();
+        errorMessage.textContent = text || 'Invalid credentials. Please try again.';
+        errorMessage.classList.remove('hidden');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      errorMessage.textContent = 'An error occurred. Please try again.';
+      errorMessage.classList.remove('hidden');
+    }
+  });
+</script>
+
+</body>
+</html>

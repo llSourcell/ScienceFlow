@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Trading Bot Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@latest/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  /* Custom styles */
+  .card {
+    @apply p-6 rounded-xl shadow-lg bg-gradient-to-br from-white to-gray-50 border border-gray-200 transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-xl transform -translate-y-1;
+  }
+  
+  .stat-card {
+    @apply p-4 rounded-lg border border-gray-200 bg-white shadow-md;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors;
+  }
+  
+  .btn-success {
+    @apply px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors;
+  }
+  
+  .btn-danger {
+    @apply px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors;
+  }
+  
+  .price-up {
+    @apply text-green-600;
+  }
+  
+  .price-down {
+    @apply text-red-600;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .card {
+      padding: 1rem;
+    }
+    
+    .stat-card {
+      padding: 0.75rem;
+    }
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+
+<nav class="bg-white shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16">
+      <div class="flex">
+        <div class="flex-shrink-0 flex items-center">
+          <span class="text-xl font-bold text-blue-600">TradingBot</span>
+        </div>
+        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <a href="/" class="border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Dashboard
+          </a>
+          <a href="/market" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Market
+          </a>
+          <a href="/portfolio" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Portfolio
+          </a>
+          <a href="/trade_history" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+            Trade History
+          </a>
+        </div>
+      </div>
+      <div class="hidden sm:ml-6 sm:flex sm:items-center">
+        {% if is_authenticated %}
+        <div class="ml-3 relative">
+          <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-700">Balance: $<span id="userBalance">{{ user.balance|default('10000.00') }}</span></span>
+            <a href="/logout" class="text-sm text-gray-700 hover:text-gray-900">Logout</a>
+          </div>
+        </div>
+        {% else %}
+        <div class="ml-3 relative">
+          <div class="flex items-center space-x-4">
+            <a href="/login" class="text-sm text-gray-700 hover:text-gray-900">Login</a>
+            <a href="/register" class="text-sm text-gray-700 hover:text-gray-900">Register</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="-mr-2 flex items-center sm:hidden">
+        <button type="button" class="mobile-menu-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500" aria-expanded="false">
+          <span class="sr-only">Open main menu</span>
+          <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hidden mobile-menu sm:hidden">
+    <div class="pt-2 pb-3 space-y-1">
+      <a href="/" class="bg-blue-50 border-blue-500 text-blue-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Dashboard
+      </a>
+      <a href="/market" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Market
+      </a>
+      <a href="/portfolio" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Portfolio
+      </a>
+      <a href="/trade_history" class="border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        Trade History
+      </a>
+    </div>
+    <div class="pt-4 pb-3 border-t border-gray-200">
+      {% if is_authenticated %}
+      <div class="flex items-center px-4">
+        <div class="ml-3">
+          <div class="text-base font-medium text-gray-800">Balance: ${{ user.balance|default('10000.00') }}</div>
+        </div>
+      </div>
+      <div class="mt-3 space-y-1">
+        <a href="/logout" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Logout
+        </a>
+      </div>
+      {% else %}
+      <div class="mt-3 space-y-1">
+        <a href="/login" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Login
+        </a>
+        <a href="/register" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+          Register
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Market Overview -->
+    <div class="card col-span-2">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Market Overview</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">BTC-USD</div>
+          <div class="text-lg font-bold" id="btc-price">$0.00</div>
+          <div class="text-sm price-up" id="btc-change">+0.00%</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">ETH-USD</div>
+          <div class="text-lg font-bold" id="eth-price">$0.00</div>
+          <div class="text-sm price-up" id="eth-change">+0.00%</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">AAPL</div>
+          <div class="text-lg font-bold" id="aapl-price">$0.00</div>
+          <div class="text-sm price-down" id="aapl-change">-0.00%</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">MSFT</div>
+          <div class="text-lg font-bold" id="msft-price">$0.00</div>
+          <div class="text-sm price-up" id="msft-change">+0.00%</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">TSLA</div>
+          <div class="text-lg font-bold" id="tsla-price">$0.00</div>
+          <div class="text-sm price-down" id="tsla-change">-0.00%</div>
+        </div>
+        <div class="stat-card">
+          <div class="text-sm text-gray-500">EURUSD</div>
+          <div class="text-lg font-bold" id="eurusd-price">$0.00</div>
+          <div class="text-sm price-up" id="eurusd-change">+0.00%</div>
+        </div>
+      </div>
+      <div class="mt-4">
+        <a href="/market" class="btn-primary">View All Markets</a>
+      </div>
+    </div>
+
+    <!-- Quick Trade -->
+    <div class="card">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Quick Trade</h2>
+      <form id="quickTradeForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Asset</label>
+          <select id="tradeSymbol" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500">
+            <option value="">Select Asset</option>
+            <optgroup label="Crypto">
+              <option value="BTC-USD">Bitcoin (BTC)</option>
+              <option value="ETH-USD">Ethereum (ETH)</option>
+              <option value="SOL-USD">Solana (SOL)</option>
+            </optgroup>
+            <optgroup label="Stocks">
+              <option value="AAPL">Apple (AAPL)</option>
+              <option value="MSFT">Microsoft (MSFT)</option>
+              <option value="TSLA">Tesla (TSLA)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <div class="flex space-x-4">
+            <label class="flex items-center">
+              <input type="radio" name="tradeType" value="buy" checked class="mr-2">
+              Buy
+            </label>
+            <label class="flex items-center">
+              <input type="radio" name="tradeType" value="sell" class="mr-2">
+              Sell
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+          <input type="number" id="tradeAmount" min="0.01" step="0.01" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500" placeholder="0.00">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Current Price</label>
+          <div id="currentPrice" class="p-2 bg-gray-100 rounded">$0.00</div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Total</label>
+          <div id="tradeTotal" class="p-2 bg-gray-100 rounded">$0.00</div>
+        </div>
+        <div>
+          <button type="submit" class="btn-primary w-full">Execute Trade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Recent Trades -->
+  <div class="card mt-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Trades</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200" id="recentTradesBody">
+          {% if recent_trades %}
+            {% for trade in recent_trades %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ trade.timestamp }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ trade.symbol }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {% if trade.trade_type == 'buy' %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Buy</span>
+                {% else %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Sell</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ trade.amount }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ trade.price }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${{ trade.total }}</td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No recent trades</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-4">
+      <a href="/trade_history" class="btn-secondary">View All Trades</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Mobile menu toggle
+  document.querySelector('.mobile-menu-button').addEventListener('click', function() {
+    document.querySelector('.mobile-menu').classList.toggle('hidden');
+  });
+  
+  // Fetch current prices for market overview
+  async function fetchMarketOverview() {
+    const symbols = ['BTC-USD', 'ETH-USD', 'AAPL', 'MSFT', 'TSLA', 'EURUSD=X'];
+    
+    for (const symbol of symbols) {
+      try {
+        const response = await fetch(`/get_price?symbol=${symbol}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+          const symbolId = symbol.replace('-', '').replace('=X', '').toLowerCase();
+          document.getElementById(`${symbolId}-price`).textContent = `$${data.price.toFixed(2)}`;
+          
+          // Simulate random change for demo
+          const change = (Math.random() * 10 - 5).toFixed(2);
+          const changeElement = document.getElementById(`${symbolId}-change`);
+          changeElement.textContent = `${change > 0 ? '+' : ''}${change}%`;
+          
+          if (change > 0) {
+            changeElement.classList.remove('price-down');
+            changeElement.classList.add('price-up');
+          } else {
+            changeElement.classList.remove('price-up');
+            changeElement.classList.add('price-down');
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching price for ${symbol}:`, error);
+      }
+    }
+  }
+  
+  // Quick trade functionality
+  const tradeSymbolSelect = document.getElementById('tradeSymbol');
+  const tradeAmountInput = document.getElementById('tradeAmount');
+  const currentPriceDiv = document.getElementById('currentPrice');
+  const tradeTotalDiv = document.getElementById('tradeTotal');
+  const quickTradeForm = document.getElementById('quickTradeForm');
+  
+  let currentPrice = 0;
+  
+  tradeSymbolSelect.addEventListener('change', async function() {
+    const symbol = this.value;
+    if (!symbol) {
+      currentPriceDiv.textContent = '$0.00';
+      currentPrice = 0;
+      updateTotal();
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/get_price?symbol=${symbol}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        currentPrice = data.price;
+        currentPriceDiv.textContent = `$${currentPrice.toFixed(2)}`;
+        updateTotal();
+      }
+    } catch (error) {
+      console.error('Error fetching price:', error);
+    }
+  });
+  
+  tradeAmountInput.addEventListener('input', updateTotal);
+  
+  function updateTotal() {
+    const amount = parseFloat(tradeAmountInput.value) || 0;
+    const total = amount * currentPrice;
+    tradeTotalDiv.textContent = `$${total.toFixed(2)}`;
+  }
+  
+  quickTradeForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const symbol = tradeSymbolSelect.value;
+    const tradeType = document.querySelector('input[name="tradeType"]:checked').value;
+    const amount = parseFloat(tradeAmountInput.value);
+    
+    if (!symbol || !amount || amount <= 0) {
+      alert('Please fill in all fields correctly.');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/execute_trade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          symbol,
+          trade_type: tradeType,
+          amount
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert(`Trade executed successfully!`);
+        document.getElementById('userBalance').textContent = data.new_balance.toFixed(2);
+        
+        // Add the new trade to the recent trades table
+        const tradesBody = document.getElementById('recentTradesBody');
+        const noTradesRow = tradesBody.querySelector('td[colspan="6"]');
+        
+        if (noTradesRow) {
+          tradesBody.innerHTML = '';
+        }
+        
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(data.trade.timestamp).toLocaleString()}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${data.trade.symbol}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${data.trade.trade_type === 'buy' 
+              ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Buy</span>'
+              : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Sell</span>'}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${data.trade.amount}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${data.trade.price.toFixed(2)}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${data.trade.total.toFixed(2)}</td>
+        `;
+        
+        tradesBody.insertBefore(newRow, tradesBody.firstChild);
+        
+        // Reset form
+        quickTradeForm.reset();
+        currentPriceDiv.textContent = '$0.00';
+        tradeTotalDiv.textContent = '$0.00';
+        currentPrice = 0;
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error executing trade:', error);
+      alert('An error occurred while executing the trade.');
+    }
+  });
+  
+  // Initialize
+  fetchMarketOverview();
+  // Refresh market overview every 30 seconds
+  setInterval(fetchMarketOverview, 30000);
+</script>
+
+</body>
+</html>
